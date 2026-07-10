@@ -1,0 +1,8 @@
+Jul 10 10:00:01 server sshd[1111]: Failed password for admin from 192.168.1.100 port 4444 ssh2
+Jul 10 10:00:05 server sshd[1112]: Failed password for admin from 192.168.1.100 port 4445 ssh2
+Jul 10 10:00:09 server sshd[1113]: Failed password for admin from 192.168.1.100 port 4446 ssh2
+Jul 10 10:00:13 server sshd[1114]: Failed password for admin from 192.168.1.100 port 4447 ssh2
+Jul 10 10:00:17 server sshd[1115]: Failed password for admin from 192.168.1.100 port 4448 ssh2
+Jul 10 10:01:00 server sshd[1200]: Accepted password for anushka from 192.168.1.10 port 5555 ssh2
+Jul 10 10:02:00 server sshd[1300]: Invalid user guest from 203.0.113.15
+Jul 10 10:03:00 server sudo: anushka : TTY=pts/0 ; PWD=/home/anushka ; USER=root ; COMMAND=/usr/bin/apt update

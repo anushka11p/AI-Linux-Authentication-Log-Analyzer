@@ -1,3 +1,4 @@
+from ai_explainer import explain_event
 from textwrap import dedent
 import json
 from collections import Counter
@@ -338,6 +339,28 @@ section[data-testid="stSidebar"] [data-testid="stToggle"] label {
 section[data-testid="stSidebar"] .stCaption,
 section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
     color: #7b8495 !important;
+}
+
+[data-testid="stFileUploader"] button {
+    background-color: #1f2937 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+[data-testid="stFileUploader"] button:hover {
+    background-color: #111827 !important;
+    color: white !important;
+}
+
+/* Upload icon */
+[data-testid="stFileUploader"] svg {
+    color: white !important;
+}
+
+/* Upload text */
+[data-testid="stFileUploader"] span {
+    color: white !important;
 }
 
     </style>
@@ -845,11 +868,22 @@ if uploaded_file is not None:
         )
 
     with summary_column:
-        st.button(
-            "Generate AI Investigation",
-            disabled=True,
-            help="Gemini AI analysis will be connected in the next step.",
-        )
+        if st.button("Generate AI Investigation", key="generate_ai"):
+            event_for_ai = alerts[0] if alerts else events[0]
+            try:
+                with st.spinner("Gemini is investigating the security event..."):
+                    st.session_state["ai_investigation"] = explain_event(event_for_ai)
+            except Exception as error:
+                st.error(f"AI investigation failed: {error}")
+                
+                if "ai_investigation" in st.session_state:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown(
+                        '<div class="section-heading">AI Security Investigation</div>',
+                        unsafe_allow_html=True,
+                        )
+                    with st.container(border=True):
+                        st.markdown(st.session_state["ai_investigation"])
 
 else:
     st.markdown("<br>", unsafe_allow_html=True)
