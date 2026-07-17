@@ -3,7 +3,7 @@ import time
 from google import genai
 from google.genai import errors
 
-from src.config import GEMINI_API_KEY
+from config import GEMINI_API_KEY
 
 
 if not GEMINI_API_KEY:
