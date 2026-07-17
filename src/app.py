@@ -16,8 +16,8 @@ from log_parser import parse_log_line
 # ---------------------------------------------------------
 
 st.set_page_config(
-    page_title="SentinelAuth | Linux Log Analyzer",
-    page_icon="🛡️",
+    page_title="DF-101 | AI Linux Authentication Log Analyzer",
+    page_icon="🐧",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -30,23 +30,54 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-        /* Main application */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-main: #080c0a;
+            --bg-secondary: #0d1410;
+            --bg-card: #111a14;
+            --bg-card-hover: #162119;
+            --border: #243329;
+            --border-bright: #31553b;
+            --text-main: #e5f4e8;
+            --text-muted: #8da495;
+            --linux-green: #55ff7f;
+            --green-dark: #1ca64c;
+            --amber: #ffbe55;
+            --red: #ff5f56;
+            --blue: #65a8ff;
+        }
+
+        html,
+        body,
+        [class*="css"] {
+            font-family: "Inter", sans-serif;
+        }
+
+        code,
+        pre,
+        .terminal-text,
+        .metric-value,
+        .card-meta {
+            font-family: "JetBrains Mono", monospace !important;
+        }
+
         .stApp {
-            background-color: #f5f6f8;
-            color: #172033;
+            background:
+                linear-gradient(rgba(85, 255, 127, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(85, 255, 127, 0.025) 1px, transparent 1px),
+                #080c0a;
+            background-size: 34px 34px;
+            color: var(--text-main);
         }
 
         .block-container {
-            max-width: 1500px;
-            padding-top: 1.2rem;
+            max-width: 1550px;
+            padding-top: 1rem;
             padding-bottom: 3rem;
         }
 
-        /* Hide Streamlit branding */
-        #MainMenu {
-            visibility: hidden;
-        }
-
+        #MainMenu,
         footer {
             visibility: hidden;
         }
@@ -56,26 +87,86 @@ st.markdown(
         }
 
         /* Sidebar */
+
         section[data-testid="stSidebar"] {
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
+            background:
+                linear-gradient(180deg, #0d1410 0%, #09100c 100%);
+            border-right: 1px solid var(--border);
         }
 
         section[data-testid="stSidebar"] > div {
-            padding-top: 1.2rem;
+            padding-top: 1rem;
+        }
+
+        section[data-testid="stSidebar"] * {
+            color: var(--text-main);
+        }
+
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] span {
+            color: var(--text-muted) !important;
+        }
+
+        .sidebar-logo {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--linux-green);
+            margin-bottom: 5px;
+        }
+
+        .sidebar-caption {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 22px;
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .sidebar-menu-item {
+            background: rgba(17, 26, 20, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 12px;
+            margin-bottom: 8px;
+            color: #b8c8bc;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .sidebar-menu-item:hover {
+            border-color: var(--border-bright);
+            background: var(--bg-card-hover);
+        }
+
+        .sidebar-menu-active {
+            background: rgba(85, 255, 127, 0.1);
+            border-color: var(--green-dark);
+            color: var(--linux-green);
+            box-shadow: inset 3px 0 0 var(--linux-green);
+        }
+
+        section[data-testid="stSidebar"] .sidebar-menu-active,
+        section[data-testid="stSidebar"] .sidebar-menu-active * {
+            color: var(--linux-green) !important;
         }
 
         /* Header */
+
         .top-header {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
+            background:
+                linear-gradient(135deg, rgba(19, 31, 22, 0.98), rgba(9, 16, 12, 0.98));
+            border: 1px solid var(--border-bright);
+            border-radius: 12px;
             padding: 18px 22px;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+            box-shadow:
+                0 12px 36px rgba(0, 0, 0, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
 
         .brand-area {
@@ -85,289 +176,326 @@ st.markdown(
         }
 
         .brand-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 13px;
-            background: #171a2b;
-            color: #ffffff;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            border: 1px solid var(--green-dark);
+            background: rgba(85, 255, 127, 0.08);
+            color: var(--linux-green);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 25px;
+            box-shadow: 0 0 18px rgba(85, 255, 127, 0.08);
         }
 
         .brand-title {
-            font-size: 21px;
-            font-weight: 750;
-            color: #111827;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
             margin: 0;
         }
 
         .brand-subtitle {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 3px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
         }
 
         .status-pill {
-            background: #ecfdf3;
-            color: #18794e;
-            border: 1px solid #b7ebcd;
+            background: rgba(85, 255, 127, 0.08);
+            color: var(--linux-green);
+            border: 1px solid var(--green-dark);
             border-radius: 999px;
-            padding: 7px 13px;
-            font-size: 12px;
+            padding: 8px 13px;
+            font-size: 11px;
             font-weight: 700;
+            font-family: "JetBrains Mono", monospace;
+            box-shadow: 0 0 14px rgba(85, 255, 127, 0.08);
         }
 
-        /* Section headings */
+        /* Section text */
+
         .section-heading {
-            font-size: 17px;
-            font-weight: 750;
-            color: #172033;
-            margin: 8px 0 12px 0;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--linux-green);
+            margin: 11px 0 12px;
+        }
+
+        .section-heading::before {
+            content: "$ ";
+            color: var(--text-muted);
         }
 
         .section-description {
-            font-size: 13px;
-            color: #6b7280;
+            font-size: 12px;
+            color: var(--text-muted);
             margin-bottom: 15px;
+            line-height: 1.7;
         }
 
-        /* Metric cards */
+        /* Metrics */
+
         .metric-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 15px;
+            background:
+                linear-gradient(145deg, #111a14 0%, #0d1510 100%);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 18px;
             min-height: 128px;
-            box-shadow: 0 5px 18px rgba(15, 23, 42, 0.035);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-bright);
         }
 
         .metric-label {
-            color: #6b7280;
-            font-size: 12px;
-            font-weight: 650;
+            color: var(--text-muted);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
         }
 
         .metric-value {
-            font-size: 31px;
-            font-weight: 800;
-            color: #111827;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--linux-green);
             margin-top: 12px;
         }
 
         .metric-note {
-            font-size: 12px;
-            color: #8490a3;
-            margin-top: 4px;
+            font-size: 11px;
+            color: #718276;
+            margin-top: 5px;
         }
 
-        /* Workspace board */
+        /* Boards */
+
         .board-column {
-            background: #ffffff;
-            border: 1px solid #e3e6eb;
-            border-radius: 15px;
+            background:
+                linear-gradient(145deg, rgba(17, 26, 20, 0.97), rgba(11, 18, 14, 0.97));
+            border: 1px solid var(--border);
+            border-radius: 10px;
             padding: 15px;
             min-height: 355px;
-            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.03);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .board-title {
-            font-size: 14px;
-            font-weight: 750;
-            color: #1f2937;
-            margin-bottom: 12px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 13px;
+            padding-bottom: 9px;
+            border-bottom: 1px solid var(--border);
         }
 
         .event-card {
-            border-radius: 11px;
+            border-radius: 8px;
             padding: 13px;
             margin-bottom: 10px;
             border: 1px solid transparent;
             font-size: 13px;
+            background: #101812;
         }
 
         .success-card {
-            background: #eaf7ef;
-            border-color: #bde4ca;
+            background: rgba(48, 201, 91, 0.08);
+            border-color: rgba(48, 201, 91, 0.28);
         }
 
         .failure-card {
-            background: #fff3d9;
-            border-color: #f3d897;
+            background: rgba(255, 190, 85, 0.08);
+            border-color: rgba(255, 190, 85, 0.3);
         }
 
         .danger-card {
-            background: #ffe7e7;
-            border-color: #f1b4b4;
+            background: rgba(255, 95, 86, 0.08);
+            border-color: rgba(255, 95, 86, 0.32);
         }
 
         .info-card {
-            background: #e9f2ff;
-            border-color: #b8d3f5;
+            background: rgba(101, 168, 255, 0.08);
+            border-color: rgba(101, 168, 255, 0.28);
         }
 
         .card-event-title {
-            font-size: 13px;
-            font-weight: 750;
-            color: #202938;
-            margin-bottom: 6px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
         }
 
         .card-meta {
-            color: #596579;
-            font-size: 12px;
-            line-height: 1.55;
+            color: var(--text-muted);
+            font-size: 10px;
+            line-height: 1.65;
         }
 
-        /* Alert */
+        .card-meta strong {
+            color: #c7d8ca;
+        }
+
+        /* Alerts */
+
         .critical-alert {
-            background: #fff5f5;
-            border: 1px solid #f0b7b7;
-            border-left: 5px solid #cf3f3f;
-            border-radius: 12px;
+            background: rgba(255, 95, 86, 0.07);
+            border: 1px solid rgba(255, 95, 86, 0.35);
+            border-left: 4px solid var(--red);
+            border-radius: 8px;
             padding: 15px;
             margin-bottom: 12px;
+            box-shadow: 0 0 20px rgba(255, 95, 86, 0.04);
         }
 
         .critical-title {
-            color: #9f2424;
-            font-size: 14px;
-            font-weight: 800;
-            margin-bottom: 5px;
+            color: var(--red);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 7px;
         }
 
         .critical-description {
-            color: #613a3a;
-            font-size: 13px;
-            line-height: 1.55;
+            color: #c9b4b1;
+            font-size: 12px;
+            line-height: 1.6;
         }
 
-        /* Upload box */
+        /* File uploader */
+
         [data-testid="stFileUploader"] {
-            background: #ffffff;
-            border: 1px dashed #bbc3d0;
-            border-radius: 14px;
-            padding: 12px;
+            background:
+                linear-gradient(145deg, #111a14, #0c130e);
+            border: 1px dashed var(--border-bright);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        [data-testid="stFileUploader"] section {
+            background: transparent;
+        }
+
+        [data-testid="stFileUploader"] button {
+            background: rgba(85, 255, 127, 0.09) !important;
+            color: var(--linux-green) !important;
+            border: 1px solid var(--green-dark) !important;
+            border-radius: 7px !important;
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 700;
+        }
+
+        [data-testid="stFileUploader"] button:hover {
+            background: rgba(85, 255, 127, 0.16) !important;
+            border-color: var(--linux-green) !important;
+        }
+
+        [data-testid="stFileUploader"] button * {
+            color: var(--linux-green) !important;
+        }
+
+        [data-testid="stFileUploader"] svg {
+            color: var(--linux-green) !important;
         }
 
         /* Buttons */
+
         .stDownloadButton > button,
         .stButton > button {
             width: 100%;
-            border-radius: 10px;
-            font-weight: 700;
             min-height: 42px;
+            border-radius: 7px;
+            background: #121d16;
+            border: 1px solid var(--border-bright);
+            color: var(--text-main);
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .stDownloadButton > button:hover,
+        .stButton > button:hover {
+            color: var(--linux-green);
+            border-color: var(--linux-green);
+            background: rgba(85, 255, 127, 0.07);
         }
 
         /* Dataframe */
+
         [data-testid="stDataFrame"] {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             overflow: hidden;
         }
 
-        /* Sidebar logo */
-        .sidebar-logo {
-            font-size: 21px;
-            font-weight: 800;
-            color: #111827;
-            margin-bottom: 4px;
+        /* Expanders and containers */
+
+        [data-testid="stExpander"] {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
         }
 
-        .sidebar-caption {
-            font-size: 12px;
-            color: #7b8495;
-            margin-bottom: 22px;
+        [data-testid="stVerticalBlockBorderWrapper"] {
+            background: var(--bg-card);
+            border-color: var(--border);
         }
 
-        .sidebar-menu-item {
-            background: #f7f8fa;
-            border: 1px solid #e7e9ed;
+        /* Slider */
+
+        [data-testid="stSlider"] [role="slider"] {
+            background: var(--linux-green);
+        }
+
+        /* Divider */
+
+        hr {
+            border-color: var(--border);
+        }
+
+        /* Alerts generated by Streamlit */
+
+        [data-testid="stAlert"] {
+            background: #111a14;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        /* Scrollbar */
+
+        ::-webkit-scrollbar {
+            width: 9px;
+            height: 9px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #090e0b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #26372b;
             border-radius: 10px;
-            padding: 11px 12px;
-            margin-bottom: 8px;
-            color: #344054;
-            font-size: 13px;
-            font-weight: 650;
         }
 
-        .sidebar-menu-active {
-            background: #171a2b;
-            color: #ffffff;
-            border-color: #171a2b;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #35523d;
         }
-
-        /* Force all sidebar text to remain visible */
-section[data-testid="stSidebar"] {
-    color: #172033 !important;
-}
-
-section[data-testid="stSidebar"] * {
-    color: #172033;
-}
-
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] {
-    color: #172033 !important;
-}
-
-/* Keep active menu item white */
-section[data-testid="stSidebar"] .sidebar-menu-active,
-section[data-testid="stSidebar"] .sidebar-menu-active * {
-    color: #ffffff !important;
-}
-
-/* Slider labels and values */
-section[data-testid="stSidebar"] [data-testid="stSlider"] label,
-section[data-testid="stSidebar"] [data-testid="stSlider"] p {
-    color: #344054 !important;
-}
-
-/* Toggle text */
-section[data-testid="stSidebar"] [data-testid="stCheckbox"] label,
-section[data-testid="stSidebar"] [data-testid="stToggle"] label {
-    color: #344054 !important;
-}
-
-/* Sidebar captions */
-section[data-testid="stSidebar"] .stCaption,
-section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
-    color: #7b8495 !important;
-}
-
-[data-testid="stFileUploader"] button {
-    background-color: #1f2937 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 600;
-}
-
-[data-testid="stFileUploader"] button:hover {
-    background-color: #111827 !important;
-    color: white !important;
-}
-
-/* Upload icon */
-[data-testid="stFileUploader"] svg {
-    color: white !important;
-}
-
-/* Upload text */
-[data-testid="stFileUploader"] span {
-    color: white !important;
-}
-
     </style>
     """,
     unsafe_allow_html=True,
 )
-
 
 # ---------------------------------------------------------
 # Helper functions
@@ -424,10 +552,10 @@ def render_event_card(event: dict, card_class: str) -> None:
 with st.sidebar:
     st.markdown(
         """
-        <div class="sidebar-logo">🛡️ SentinelAuth</div>
-        <div class="sidebar-caption">
-            AI-powered authentication monitoring
-        </div>
+        <div class="sidebar-logo">🐧 DF-101 // AUTHGUARD</div>
+<div class="sidebar-caption">
+    root@digital-fort:~/security/auth-analysis
+</div>
 
         <div class="sidebar-menu-item sidebar-menu-active">
             ◉ Analysis Workspace
@@ -451,7 +579,29 @@ with st.sidebar:
     st.divider()
 
     st.markdown(
-    '<div style="font-size:15px;font-weight:700;color:#172033;margin-bottom:12px;">Analysis settings</div>',
+    dedent(
+        """
+        <div class="top-header">
+            <div class="brand-area">
+                <div class="brand-icon">🐧</div>
+
+                <div>
+                    <div class="brand-title">
+                        DF-101 // AI Linux Authentication Log Analyzer
+                    </div>
+
+                    <div class="brand-subtitle">
+                        root@authguard:~$ monitor --source auth.log --mode detection
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-pill">
+                ● ENGINE ONLINE
+            </div>
+        </div>
+        """
+    ),
     unsafe_allow_html=True,
 )
 
